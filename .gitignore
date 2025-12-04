@@ -1,0 +1,14 @@
+# Ne pas envoyer les gros fichiers de données
+data/
+*.csv
+*.zip
+*.db
+
+# Python (si on fait un backend Python)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node (si on fait un backend Node)
+node_modules/
