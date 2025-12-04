@@ -21,16 +21,61 @@ def ping():
 # -------------------- CRUD ENTREPRISES --------------------
 
 
+from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from .database import get_db
+from . import models, schemas
+
+
 @app.post("/companies", response_model=schemas.CompanyRead)
-def create_company(
-    company_in: schemas.CompanyCreate,
-    db: Session = Depends(get_db),
-):
-    company = models.Company(**company_in.dict())
+def create_company(payload: schemas.CompanyCreate, db: Session = Depends(get_db)):
+    """
+    Crée une entreprise.
+    - Si activity_code est fourni, on vérifie qu'il existe dans la table Activity.
+    - On vérifie aussi que le numéro d'entreprise n'est pas déjà utilisé.
+    """
+
+    # 1) Vérifier le code NACE si renseigné
+    if payload.activity_code:
+        activity = (
+            db.query(models.Activity)
+            .filter(models.Activity.nace_code == payload.activity_code)
+            .first()
+        )
+        if activity is None:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Activité '{payload.activity_code}' inconnue. "
+                    "Veuillez utiliser un code NACE valide issu des données KBO."
+                ),
+            )
+
+    # 2) Vérifier l'unicité du numéro d'entreprise
+    existing_company = (
+        db.query(models.Company)
+        .filter(models.Company.enterprise_number == payload.enterprise_number)
+        .first()
+    )
+    if existing_company:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"L'entreprise avec le numéro {payload.enterprise_number} "
+                "existe déjà."
+            ),
+        )
+
+    # 3) Créer et sauvegarder l'entreprise
+    company = models.Company(**payload.dict())
     db.add(company)
     db.commit()
     db.refresh(company)
+
     return company
+
+
 
 
 @app.get("/companies", response_model=List[schemas.CompanyRead])

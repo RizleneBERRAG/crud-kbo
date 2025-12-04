@@ -39,8 +39,20 @@ class CompanyBase(BaseModel):
     enterprise_number: Optional[str] = None  # numéro BCE facultatif
 
 
+class CompanyBase(BaseModel):
+    name: str
+    legal_form: Optional[str] = None
+    street: Optional[str] = None
+    number: Optional[str] = None
+    postcode: Optional[str] = None
+    city: Optional[str] = None
+    country: Optional[str] = "Belgium"
+    activity_code: Optional[str] = None
+    enterprise_number: Optional[str] = None  # numéro BCE facultatif
+
+
 class CompanyCreate(CompanyBase):
-    pass
+    activity_code: str  # obligatoire à la création
 
 
 class CompanyUpdate(BaseModel):

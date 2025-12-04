@@ -4,6 +4,16 @@ from sqlalchemy.orm import relationship
 from .database import Base
 
 
+class Activity(Base):
+    __tablename__ = "activities"
+
+    id = Column(Integer, primary_key=True, index=True)
+    nace_code = Column(String, index=True, nullable=False)
+    activity_group = Column(String, nullable=True)
+    nace_version = Column(String, nullable=True)
+    classification = Column(String, nullable=True)
+
+
 class Company(Base):
     __tablename__ = "companies"
 
